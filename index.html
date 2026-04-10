@@ -40,11 +40,11 @@
         }
     </style>
 </head>
-<body onload="startTimer()">
+<body>
 
     <!-- TIMER FLOAT -->
     <div id="timerContainer" class="fixed bottom-10 right-10 px-8 py-4 rounded-3xl flex items-center gap-4 transition-all">
-        <i class="fas fa-hourglass-half text-blue-600 text-2xl" id="timerIcon"></i>
+        <i class="fas fa-hourglass-start text-blue-600 text-2xl" id="timerIcon"></i>
         <span id="displayTime" class="text-4xl font-black font-mono tracking-tighter">00:00</span>
     </div>
 
@@ -253,26 +253,50 @@
     </footer>
 
     <script>
-        // TIMER LOGIC
-        let sec = 0;
-        let timer = null;
-        function startTimer() {
-            timer = setInterval(() => {
+        // TIMER LOGIC - Robust initialization
+        function initTimer() {
+            let sec = 0;
+            const display = document.getElementById('displayTime');
+            const container = document.getElementById('timerContainer');
+            const icon = document.getElementById('timerIcon');
+
+            if (!display || !container) return;
+
+            const timer = setInterval(() => {
                 sec++;
                 let m = Math.floor(sec / 60);
                 let s = sec % 60;
-                document.getElementById('displayTime').innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
                 
+                // Update text
+                display.innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+                
+                // 8-10 Minutes Warning (8 mins = 480 seconds)
                 if (sec >= 480 && sec < 600) { 
-                    document.getElementById('timerContainer').classList.add('timer-warning');
-                    document.getElementById('timerIcon').classList.replace('fa-hourglass-start', 'fa-hourglass-half');
-                } else if (sec >= 600) { 
+                    container.classList.add('timer-warning');
+                    if (icon) {
+                        icon.classList.remove('fa-hourglass-start');
+                        icon.classList.add('fa-hourglass-half');
+                    }
+                } 
+                // 10 Minutes Limit Stop (10 mins = 600 seconds)
+                else if (sec >= 600) { 
                     clearInterval(timer);
-                    document.getElementById('timerContainer').classList.replace('timer-warning', 'timer-stop');
-                    document.getElementById('displayTime').innerText = "10:00";
-                    document.getElementById('timerIcon').classList.replace('fa-hourglass-half', 'fa-hourglass-end');
+                    container.classList.remove('timer-warning');
+                    container.classList.add('timer-stop');
+                    display.innerText = "10:00";
+                    if (icon) {
+                        icon.classList.remove('fa-hourglass-half');
+                        icon.classList.add('fa-hourglass-end');
+                    }
                 }
             }, 1000);
+        }
+
+        // Run as soon as the DOM elements are ready
+        if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", initTimer);
+        } else {
+            initTimer();
         }
     </script>
 </body>
